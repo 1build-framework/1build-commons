@@ -1,7 +1,11 @@
 package dev.onebuild.domain.model.db;
 
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+
 import java.math.BigDecimal;
 import java.sql.Types;
+import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,16 +39,25 @@ public class OneBuildTypeMappings {
 
     // Java types --> JDBC SQL types
     javaToSqlTypeMap.put(String.class, Types.VARCHAR);
-    javaToSqlTypeMap.put(Integer.class, Types.BIGINT);
+    javaToSqlTypeMap.put(Integer.class, Types.INTEGER);
     javaToSqlTypeMap.put(Long.class, Types.BIGINT);
-    javaToSqlTypeMap.put(Float.class, Types.DOUBLE);
+    javaToSqlTypeMap.put(Float.class, Types.FLOAT);
     javaToSqlTypeMap.put(Double.class, Types.DOUBLE);
-    javaToSqlTypeMap.put(BigDecimal.class, Types.DOUBLE);
+    javaToSqlTypeMap.put(BigDecimal.class, Types.NUMERIC);
     javaToSqlTypeMap.put(Boolean.class, Types.BOOLEAN);
-    javaToSqlTypeMap.put(java.util.Date.class, Types.TIMESTAMP);
     javaToSqlTypeMap.put(java.sql.Date.class, Types.DATE);
+    javaToSqlTypeMap.put(LocalDate.class, Types.DATE);
+    javaToSqlTypeMap.put(java.util.Date.class, Types.TIMESTAMP);
+    javaToSqlTypeMap.put(java.sql.Time.class, Types.TIME);
+    javaToSqlTypeMap.put(LocalTime.class, Types.TIME);
     javaToSqlTypeMap.put(java.sql.Timestamp.class, Types.TIMESTAMP);
+    javaToSqlTypeMap.put(LocalDateTime.class, Types.TIMESTAMP);
+    javaToSqlTypeMap.put(Instant.class, Types.TIMESTAMP);
     javaToSqlTypeMap.put(java.sql.Blob.class, Types.BLOB);
+    javaToSqlTypeMap.put(java.sql.Clob.class, Types.CLOB);
+    javaToSqlTypeMap.put(ZonedDateTime.class, Types.TIMESTAMP_WITH_TIMEZONE);
+    javaToSqlTypeMap.put(OffsetDateTime.class, Types.TIMESTAMP_WITH_TIMEZONE);
+    javaToSqlTypeMap.put(OffsetTime.class, Types.TIME_WITH_TIMEZONE);
 
     // Mapping SQL types to database-specific types
     Map<DatabaseType, String> varcharMapping = Map.of(
@@ -114,5 +127,15 @@ public class OneBuildTypeMappings {
       return dbTypeMap.get(dbType);
     }
     return null;
+  }
+
+  public static SqlParameterSource convertToSqlParameters(Map<String, Object> parameters) {
+    var parameterSource = new MapSqlParameterSource();
+    for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+      Object value = entry.getValue();
+      Integer type = javaToSqlTypeMap.get(entry.getValue().getClass());
+      parameterSource.addValue(entry.getKey(), value, type == null ? Types.OTHER : type);
+    }
+    return parameterSource;
   }
 }

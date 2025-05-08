@@ -9,6 +9,7 @@ public interface OneBuildRecord {
   Object getId();
   void setId(Object id);
   Object get(String name);
+  Object getFirst();
   int getColumnCount();
   String getIdName();
   OneBuildType getOneBuildType(String name);

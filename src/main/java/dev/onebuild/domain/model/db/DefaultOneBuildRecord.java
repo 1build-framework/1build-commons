@@ -78,6 +78,12 @@ public class DefaultOneBuildRecord implements OneBuildRecord, Serializable {
   }
 
   @Override
+  public Object getFirst() {
+    if(record.isEmpty()) return null;
+    return record.get(getColumnNames().getFirst());
+  }
+
+  @Override
   public int getColumnCount() {
     return this.record.size();
   }
@@ -120,6 +126,22 @@ public class DefaultOneBuildRecord implements OneBuildRecord, Serializable {
     try {
       ResultSetMetaData metadata = rs.getMetaData();
       record = new DefaultOneBuildRecord(database.getId(), metadata.getColumnCount());
+      for(int i = 1; i <= metadata.getColumnCount(); i++) {
+        String name = metadata.getColumnName(i);
+        Object value = rs.getObject(i);
+        record.add(name, value);
+      }
+    } catch(Exception e) {
+      return null;
+    }
+    return record;
+  }
+
+  public static OneBuildRecord from(ResultSet rs) {
+    DefaultOneBuildRecord record;
+    try {
+      ResultSetMetaData metadata = rs.getMetaData();
+      record = new DefaultOneBuildRecord(metadata.getColumnCount());
       for(int i = 1; i <= metadata.getColumnCount(); i++) {
         String name = metadata.getColumnName(i);
         Object value = rs.getObject(i);

@@ -1,10 +1,15 @@
 package dev.onebuild.errors;
 
-public class OneBuildDataSourceNotFoundException extends OneBuildException {
+public class OneBuildDataSourceNotFoundException extends RuntimeException implements OneBuildException {
   private String dataSource;
   public OneBuildDataSourceNotFoundException(String dataSource) {
     super();
     this.dataSource = dataSource;
+  }
+
+  @Override
+  public ErrorCode getErrorCode() {
+    return null;
   }
 
   @Override
