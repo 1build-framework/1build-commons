@@ -46,9 +46,8 @@ jobs:
           JSON_PAYLOAD=$(jq -n --arg content "$BASE64_CONTENT" --arg message "Upload JAR file" \
           '{ "message": $message, "content": $content }')
 
-        # Upload to GitHub
           curl -X PUT \
-          -H "Authorization: Bearer $GITHUB_TOKEN" \
-          -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/json" \
             -d "$JSON_PAYLOAD" \
             "https://api.github.com/repos/${{ github.repository }}/contents/${{ env.JAR_NAME }}"
