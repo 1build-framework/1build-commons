@@ -5,8 +5,14 @@ plugins {
 	id 'org.springframework.boot' version '3.4.4'
 }
 
+def generateVersion() {
+	def date = new Date().format("yyyy-MM-dd")
+	def commitCount = "git rev-list --count HEAD".execute().text.trim()
+	return "${date}.${commitCount}"
+}
+
 group = 'dev.onebuild'
-version = rootProject.extensions.VERSION
+version = generateVersion()
 
 java {
 	toolchain {
@@ -46,8 +52,9 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+/*
 tasks.named('printVersion') {
 	doLast {
 		println "Current Version: ${version}"
 	}
-}
+}*/

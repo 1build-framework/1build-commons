@@ -1,13 +1,10 @@
-name: Build and Release Project
+name: 1build-commons builder
 
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-  workflow_dispatch:
-  release:
-    types: [created]
 
 jobs:
   build:
@@ -26,48 +23,23 @@ jobs:
       - name: Grant execute permission for Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Build with Gradle wrapper
+      - name: Build Project
         run: ./gradlew clean build
 
-      - name: Upload JAR artifact
-        id: upload-artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: 1build-commons
-          path: build/libs/*.jar
+      - name: Identify JAR File
+        id: identify_jar
+        run: |
+          JAR_FILE=$(ls build/libs/*.jar | head -n 1)
+          echo "JAR_FILE=$JAR_FILE" >> $GITHUB_ENV
+          echo "JAR_NAME=$(basename $JAR_FILE)" >> $GITHUB_ENV
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Download Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: 1build-commons
-          path: ./
-
-      - name: Get Release ID
-        id: get_release
+      - name: Upload JAR to Repository
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          release_id=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }}" \
-              | jq -r '.id')
-          echo "release_id=$release_id" >> $GITHUB_ENV
-
-      - name: Upload Release Asset
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Uploading release asset..."
-          curl -X POST \
+          echo "Uploading JAR to repository..."
+          curl -X PUT \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Content-Type: application/java-archive" \
-            --data-binary @1build-commons.jar \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.release_id }}/assets?name=1build-commons.jar"
+            --data-binary @${{ env.JAR_FILE }} \
+            "https://api.github.com/repos/${{ github.repository }}/contents/${{ env.JAR_NAME }}?ref=main"

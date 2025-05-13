@@ -1,16 +1,1 @@
 rootProject.name = '1build-commons'
-
-
-def versionFile = file('version.properties')
-
-if (!versionFile.exists()) {
-  versionFile.createNewFile()
-}
-
-def properties = new Properties()
-versionFile.withInputStream { properties.load(it) }
-
-def version = properties.getProperty('VERSION', '0.0.0')
-rootProject.ext.set("VERSION", version)
-
-println "Current Version: $version"
