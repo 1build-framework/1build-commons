@@ -38,16 +38,24 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: 1build-commons
+
       - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: build/libs/*.jar
-          asset_name: 1build-commons.jar
-          asset_content_type: application/java-archive
+        run: |
+          echo "Uploading release asset..."
+          release_id=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/java-archive" \
+            --data-binary @1build-commons.jar \
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/$release_id/assets?name=1build-commons.jar"
