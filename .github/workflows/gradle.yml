@@ -33,9 +33,8 @@ jobs:
           echo "JAR_FILE=$JAR_FILE" >> $GITHUB_ENV
           echo "JAR_NAME=$(basename $JAR_FILE)" >> $GITHUB_ENV
 
-      - name: Install AWS CLI
-        run: |
-          sudo apt-get install -y awscli
+      - name: Check AWS CLI Version
+        run: aws --version
 
       - name: Configure AWS Credentials
         run: |
