@@ -33,21 +33,16 @@ jobs:
           echo "JAR_FILE=$JAR_FILE" >> $GITHUB_ENV
           echo "JAR_NAME=$(basename $JAR_FILE)" >> $GITHUB_ENV
 
-      - name: Upload JAR to Repository
-        env:
-          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
+      - name: Install AWS CLI
         run: |
-          echo "Uploading JAR to repository..."
-          
-          # Encode the JAR file to Base64
-          BASE64_CONTENT=$(base64 -w 0 "${{ env.JAR_FILE }}")
-          
-          # Create JSON payload
-          JSON_PAYLOAD=$(jq -n --arg content "$BASE64_CONTENT" --arg message "Upload JAR file" \
-          '{ "message": $message, "content": $content }')
+          sudo apt-get install -y awscli
 
-          curl -X PUT \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d "$JSON_PAYLOAD" \
-            "https://api.github.com/repos/${{ github.repository }}/contents/${{ env.JAR_NAME }}"
+      - name: Configure AWS Credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.ONEBUILD_AWS_KEY }}
+          aws configure set aws_secret_access_key ${{ secrets.ONEBUILD_AWS_SECRET }}
+
+      - name: Upload JAR to S3
+        run: |
+          echo "Uploading JAR to S3..."
+          aws s3 cp "${{ env.JAR_FILE }}" "s3://1build-framework/1build-commons/${{ env.JAR_NAME }}"
