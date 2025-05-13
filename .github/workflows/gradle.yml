@@ -35,7 +35,7 @@ jobs:
 
       - name: Upload JAR to Repository
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
         run: |
           echo "Uploading JAR to repository..."
           
