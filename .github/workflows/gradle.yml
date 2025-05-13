@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+  release:
+    types: [created]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,8 +29,25 @@ jobs:
         run: ./gradlew clean build
 
       - name: Upload JAR artifact
-        if: success()
+        id: upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: 1build-commons
           path: build/libs/*.jar
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: build/libs/*.jar
+          asset_name: 1build-commons.jar
+          asset_content_type: application/java-archive
