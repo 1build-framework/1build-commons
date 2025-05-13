@@ -1,4 +1,4 @@
-name: Build Project
+name: Build and Release Project
 
 on:
   push:
@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
   release:
     types: [created]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -39,6 +40,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.event_name == 'release'
+
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4
@@ -47,15 +49,25 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: 1build-commons
+          path: ./
+
+      - name: Get Release ID
+        id: get_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          release_id=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/releases/tags/${{ github.event.release.tag_name }}" \
+              | jq -r '.id')
+          echo "release_id=$release_id" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "Uploading release asset..."
-          release_id=$(echo $GITHUB_REF | sed 's/refs\/tags\///')
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Content-Type: application/java-archive" \
             --data-binary @1build-commons.jar \
-            "https://uploads.github.com/repos/${{ github.repository }}/releases/$release_id/assets?name=1build-commons.jar"
+            "https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.release_id }}/assets?name=1build-commons.jar"
