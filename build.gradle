@@ -1,3 +1,10 @@
+buildscript {
+	ext {
+		awsAccessKey = findProperty("aws_access_key") ?: System.getenv("ONEBUILD_AWS_KEY")
+		awsSecretKey = findProperty("aws_secret_key") ?: System.getenv("ONEBUILD_AWS_SECRET")
+	}
+}
+
 plugins {
 	id 'java'
 	id 'java-library'
@@ -5,7 +12,7 @@ plugins {
 	id 'org.springframework.boot' version '3.4.4'
 }
 
-def generateVersion() {
+static def generateVersion() {
 	def date = new Date().format("yyyy-MM-dd")
 	def commitCount = "git rev-list --count HEAD".execute().text.trim()
 	return "${date}.${commitCount}"
@@ -23,6 +30,15 @@ java {
 repositories {
 	mavenLocal()
 	mavenCentral()
+	repositories {
+		maven {
+			url = "s3://1build-framework/releases"
+			credentials(AwsCredentials) {
+				accessKey = awsAccessKey
+				secretKey = awsSecretKey
+			}
+		}
+	}
 }
 
 jar {
@@ -48,21 +64,18 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 
-tasks.named('build') {
-	dependsOn writeVersionFile
-}
-
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
-task writeVersionFile {
-	def versionFile = file("version.txt")
-	inputs.property("version", version)
-	outputs.file(versionFile)
-
-	doLast {
-		println "Writing version: ${version} to ${versionFile}"
-		versionFile.text = version
+publishing {
+	repositories {
+		maven {
+			url = "s3://1build-framework/releases/"
+			credentials(AwsCredentials) {
+				accessKey = awsAccessKey
+				secretKey = awsSecretKey
+			}
+		}
 	}
 }
