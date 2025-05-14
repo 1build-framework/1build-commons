@@ -28,6 +28,12 @@ jobs:
       - name: Build Project
         run: ./gradlew clean build
 
+      - name: Read Version from File
+        id: read_version
+        run: |
+          VERSION=$(cat version.txt)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Identify JAR File
         id: identify_jar
         run: |
@@ -46,4 +52,4 @@ jobs:
       - name: Upload JAR to S3
         run: |
           echo "Uploading JAR to S3..."
-          aws s3 cp "${{ env.JAR_FILE }}" "s3://1build-framework/1build-commons/${{ env.JAR_NAME }}"
+          aws s3 cp "${{ env.JAR_FILE }}" "s3://1build-framework/dev/onebuild/1build-commons/${{ env.VERSION }}/${{ env.JAR_NAME }}"
