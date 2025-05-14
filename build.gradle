@@ -48,13 +48,21 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
 }
 
+tasks.named('build') {
+	dependsOn writeVersionFile
+}
+
 tasks.named('test') {
 	useJUnitPlatform()
 }
 
-/*
-tasks.named('printVersion') {
+task writeVersionFile {
+	def versionFile = file("version.txt")
+	inputs.property("version", version)
+	outputs.file(versionFile)
+
 	doLast {
-		println "Current Version: ${version}"
+		println "Writing version: ${version} to ${versionFile}"
+		versionFile.text = version
 	}
-}*/
+}
