@@ -11,7 +11,7 @@ def generateVersion() {
 	return "${date}.${commitCount}"
 }
 
-group = 'dev.onebuild'
+group = 'dev.onebuild.commons'
 version = generateVersion()
 
 java {
