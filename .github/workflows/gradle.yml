@@ -52,4 +52,4 @@ jobs:
       - name: Upload JAR to S3
         run: |
           echo "Uploading JAR to S3..."
-          aws s3 cp "${{ env.JAR_FILE }}" "s3://1build-framework/dev/onebuild/commons/1build-commons/${{ env.VERSION }}/${{ env.JAR_NAME }}"
+          aws s3 cp "${{ env.JAR_FILE }}" "s3://1build-framework/releases/dev/onebuild/commons/1build-commons/${{ env.VERSION }}/${{ env.JAR_NAME }}"
